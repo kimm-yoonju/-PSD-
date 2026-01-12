@@ -20,7 +20,7 @@ const layerSchema = {
       },
       description: {
         type: Type.STRING,
-        description: 'A brief explanation of what this layer contains. For text layers, this must include font weight, size, and color hex code(s).'
+        description: 'A brief explanation of what this layer contains. For text layers, this must include the text content and color hex code(s).'
       },
       type: {
         type: Type.STRING,
@@ -54,10 +54,9 @@ For each layer, you will:
 LAYER DESCRIPTION REQUIREMENTS:
 - For "image" layers (rasterized parts, photos): Describe the content (e.g., "A blurry forest landscape.", "A red sports car, front view.").
 - For "shape" layers (vector-like elements, solid colors): Describe the shape and color (e.g., "A solid blue circle.", "A red rectangle with rounded corners.").
-- For "text" layers: Your description MUST include your best estimation of the following:
-    1.  Font Weight: (e.g., "Bold")
-    2.  Font Size: (e.g., "Approximately 48pt")
-    3.  Color Hex: Provide the hex code (e.g., "#FFFFFF"). If the text has a gradient, analyze the colors and provide the hex codes for the primary colors (e.g., "Gradient from #FF5733 to #C70039").
+- For "text" layers: Your description MUST include the following, separated by a comma:
+    1.  Text: The exact text content from the image.
+    2.  Color Hex: Provide the hex code (e.g., "#FFFFFF"). If the text has a gradient, analyze the colors and provide the hex codes for the primary colors (e.g., "Gradient from #FF5733 to #C70039").
 
 Structure your entire response as a single JSON array of layer objects. Order the layers from bottom (background) to top (foreground).`;
 
