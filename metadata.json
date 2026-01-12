@@ -1,0 +1,5 @@
+{
+  "name": "AI PSD Layer Architect",
+  "description": "Upload an image and leverage AI to analyze and break it down into a logical set of layers, preparing it for professional editing in software like Photoshop. This tool provides a blueprint for your PSD file.",
+  "requestFramePermissions": []
+}
