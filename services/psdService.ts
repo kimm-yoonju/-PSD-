@@ -26,6 +26,12 @@ async function loadImageData(url: string): Promise<{ data: Uint8ClampedArray; wi
     };
 }
 
+// Helper to load an image from a base64 string
+async function loadImageDataFromBase64(base64: string): Promise<{ data: Uint8ClampedArray; width: number; height: number; }> {
+    const url = `data:image/png;base64,${base64}`;
+    return loadImageData(url);
+}
+
 
 export async function exportToPsd(imageUrl: string, layers: Layer[]): Promise<Uint8Array> {
     const { data: baseImageData, width, height } = await loadImageData(imageUrl);
@@ -47,7 +53,26 @@ export async function exportToPsd(imageUrl: string, layers: Layer[]): Promise<Ui
     if (!ctx) throw new Error("Could not create layer canvas context");
 
     for (const layer of layers) {
-        ctx.clearRect(0, 0, width, height); // Clear for each new layer
+        // If layer is an image and has been extracted, use the actual image data
+        if (layer.type === 'image' && layer.extractedImage) {
+            const { data: extractedData, width: extractedWidth, height: extractedHeight } = await loadImageDataFromBase64(layer.extractedImage);
+            
+            const left = Math.round(layer.boundingBox.x * width);
+            const top = Math.round(layer.boundingBox.y * height);
+
+            psdLayers.push({
+                name: `[Extracted] ${layer.name}`,
+                imageData: extractedData,
+                left: left,
+                top: top,
+                right: left + extractedWidth,
+                bottom: top + extractedHeight,
+            });
+            continue; // Move to the next layer
+        }
+
+        // Otherwise, draw a colored box as a guide
+        ctx.clearRect(0, 0, width, height);
         
         const [r, g, b, a] = typeToRgba[layer.type];
         ctx.fillStyle = `rgba(${r}, ${g}, ${b}, ${a / 255})`;

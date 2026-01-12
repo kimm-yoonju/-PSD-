@@ -12,4 +12,5 @@ export interface Layer {
   description: string;
   type: LayerType;
   boundingBox: BoundingBox;
+  extractedImage?: string;
 }
