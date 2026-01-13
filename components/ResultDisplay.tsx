@@ -1,6 +1,6 @@
 import React, { useState } from 'react';
 import { Layer, LayerType } from '../types';
-import { LayersIcon, RefreshCwIcon, ImageIcon, SquareIcon, TypeIcon, ScissorsIcon, DownloadIcon } from './icons';
+import { LayersIcon, RefreshCwIcon, ImageIcon, SquareIcon, TypeIcon, ScissorsIcon, DownloadIcon, CopyIcon, CheckIcon } from './icons';
 
 interface ResultDisplayProps {
   imageUrl: string;
@@ -37,6 +37,39 @@ const typeHighlightBorderMap: Record<LayerType, string> = {
     text: 'border-red-400',
 };
 
+const CopyableTableRow: React.FC<{ label: string; value: string }> = ({ label, value }) => {
+  const [copied, setCopied] = useState(false);
+
+  const handleCopy = () => {
+    if (navigator.clipboard) {
+      navigator.clipboard.writeText(value).then(() => {
+        setCopied(true);
+        setTimeout(() => setCopied(false), 2000);
+      });
+    }
+  };
+
+  return (
+    <tr className="border-b border-gray-700/50 last:border-b-0">
+      <th scope="row" className="py-1 pr-3 font-medium text-gray-300 whitespace-nowrap">
+        {label}
+      </th>
+      <td className="py-1 pl-3 text-blue-300 font-mono">
+        <div className="flex items-center justify-between gap-2">
+            <span className="truncate">{value}</span>
+            <button 
+                onClick={handleCopy} 
+                className="p-1 rounded-md hover:bg-gray-600/50 text-gray-400 hover:text-white transition-colors flex-shrink-0"
+                aria-label={`Copy ${label}`}
+            >
+            {copied ? <CheckIcon className="w-4 h-4 text-green-400" /> : <CopyIcon className="w-4 h-4" />}
+            </button>
+        </div>
+      </td>
+    </tr>
+  );
+};
+
 const LayerDescription: React.FC<{ layer: Layer }> = ({ layer }) => {
   // For non-text layers or unstructured descriptions, show a simple paragraph.
   if (layer.type !== 'text' || !layer.description.includes(':')) {
@@ -62,14 +95,7 @@ const LayerDescription: React.FC<{ layer: Layer }> = ({ layer }) => {
               <table className="w-full text-sm text-left">
                   <tbody className="text-gray-400">
                       {properties.map(({ key, value }, index) => (
-                          <tr key={index} className="border-b border-gray-700/50 last:border-b-0">
-                              <th scope="row" className="py-1 pr-3 font-medium text-gray-300 whitespace-nowrap">
-                                  {key}
-                              </th>
-                              <td className="py-1 pl-3 text-blue-300 font-mono">
-                                  {value}
-                              </td>
-                          </tr>
+                          <CopyableTableRow key={index} label={key} value={value} />
                       ))}
                   </tbody>
               </table>
@@ -153,7 +179,7 @@ const ResultDisplay: React.FC<ResultDisplayProps> = ({ imageUrl, layers, onReset
                         key={originalIndex}
                         onMouseEnter={() => setActiveLayerIndex(originalIndex)}
                         onMouseLeave={() => setActiveLayerIndex(null)}
-                        className={`bg-gray-800 p-3 rounded-md border border-gray-700/50 transition-all duration-200 cursor-pointer ${activeLayerIndex === originalIndex ? 'bg-gray-700/80 border-blue-500/60' : 'hover:border-blue-500/50 hover:bg-gray-700/50'}`}
+                        className={`bg-gray-800 p-3 rounded-md border border-gray-700/50 transition-all duration-200 ${activeLayerIndex === originalIndex ? 'bg-gray-700/80 border-blue-500/60' : 'hover:border-blue-500/50 hover:bg-gray-700/50'}`}
                     >
                       <div className="flex items-center justify-between">
                           <div className="flex items-center gap-3">
@@ -161,22 +187,24 @@ const ResultDisplay: React.FC<ResultDisplayProps> = ({ imageUrl, layers, onReset
                               <span className="font-semibold text-blue-300">{layer.name}</span>
                           </div>
                            <div className="flex items-center gap-2">
-                                {layer.type === 'image' && (
-                                    <button
-                                        onClick={() => onExtractLayer(originalIndex)}
-                                        disabled={isExtracting}
-                                        className="flex items-center text-xs px-2 py-1 bg-gray-700 hover:bg-gray-600 rounded-md font-semibold transition-colors disabled:bg-gray-600 disabled:text-gray-400 disabled:cursor-not-allowed"
-                                    >
-                                        <ScissorsIcon className={`w-3 h-3 mr-1 ${isExtracting ? 'animate-spin' : ''}`} />
-                                        {isExtracting ? 'Extracting...' : 'Extract'}
-                                    </button>
-                                )}
                                 <span className={`text-xs font-mono capitalize px-2 py-1 rounded-full border ${typeColorMap[layer.type] || 'bg-gray-700'}`}>
                                     {layer.type}
                                 </span>
                            </div>
                       </div>
                       <LayerDescription layer={layer} />
+                       {layer.type === 'image' && (
+                            <div className="flex justify-end mt-2">
+                                <button
+                                    onClick={() => onExtractLayer(originalIndex)}
+                                    disabled={isExtracting}
+                                    className="flex items-center text-xs px-2 py-1 bg-gray-700 hover:bg-gray-600 rounded-md font-semibold transition-colors disabled:bg-gray-600 disabled:text-gray-400 disabled:cursor-not-allowed"
+                                >
+                                    <ScissorsIcon className={`w-3 h-3 mr-1 ${isExtracting ? 'animate-spin' : ''}`} />
+                                    {isExtracting ? 'Extracting...' : 'Extract'}
+                                </button>
+                            </div>
+                        )}
                     </li>
                 )
               })}
